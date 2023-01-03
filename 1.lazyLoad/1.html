@@ -1,0 +1,61 @@
+<!--
+	解题思路：
+	 	使用 element.offsetTop - (viewHeight + scrollTop) 判断 img元素 是否已进入视口区来加载图片
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<style>
+		.picture {
+			/* width: 60%; */
+			height: 600px;
+		}
+	</style>
+</head>
+
+<body>
+</body>
+<script>
+
+	function createEl() {
+		const fragment = document.createDocumentFragment()
+
+		for (let index = 0; index < 100; index++) {
+			const img = document.createElement('img')
+			img.className = 'picture'
+			img.setAttribute('data-src', '../assets/lovely.jpeg')
+			fragment.appendChild(img)
+		}
+
+		document.body.append(fragment)
+	}
+
+	function lazyLoad() {
+		// 视窗高度
+		const viewHeight = window.innerHeight || document.documentElement.clientHeight
+		// 文档高度
+		const scrollTop = document.documentElement.scrollTop
+
+		const imgs = document.getElementsByTagName('img')
+		for (let index = 0; index < imgs.length; index++) {
+			const element = imgs[index];
+			// 通过元素距离文档高度 - （视图高度 + 已滚动距离） // 也就是马上要进入视口区了就加载
+			if (element.offsetTop - (viewHeight + scrollTop) < 5) {
+				element.setAttribute('src', element.dataset.src)
+			}
+		}
+	}
+
+	createEl()
+	lazyLoad()
+	document.addEventListener('scroll', lazyLoad)
+
+</script>
+
+</html>
