@@ -1,0 +1,126 @@
+<!-- 
+	问题：
+		1. 每次滚动都会获取所有元素及 top 值，并进行 src 的赋值操作
+		2. 当图片过大，加载速度比较慢时，没有占位图作为铺垫展示
+		3. 滚动执行加载频率过快
+		4. 距离进入屏幕还很远的后续图片没必要判断是否会进入视口区
+	针对以上问题进行优化：
+		1. 记录已加载的图片，在循环时只处理那些未被加载的图片
+		2. 添加默认占位图
+		3. 使用防抖节流
+		4. 在发现当前图片距离进入视口区还有些距离时终止循环
+ -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<style>
+		.picture {
+			height: 500px;
+			display: block;
+		}
+	</style>
+</head>
+
+<body>
+
+</body>
+<script>
+
+	function createEl() {
+		const fragment = document.createDocumentFragment()
+
+		for (let index = 0; index < 100; index++) {
+			const img = document.createElement('img')
+			img.className = 'picture'
+			img.setAttribute('src', '../assets/violet.jpeg') // 占位图
+			img.setAttribute('data-src', '../assets/lovely.jpeg')
+			fragment.appendChild(img)
+		}
+
+		document.body.appendChild(fragment)
+	}
+
+	// 记录已加载的图片下标
+	let loadedIndex = 0
+	function lazyLoad() {
+		const viewHeight = window.innerHeight || document.documentElement.clientHeight
+
+		const imgs = document.getElementsByTagName('img')
+
+		// 触发一次循环都从已加载到的位置开始判断
+		for (let index = loadedIndex; index < imgs.length; index++) {
+			const element = imgs[index]
+
+			const top = element.getBoundingClientRect().top
+			if (viewHeight - top > 5) {
+				loadedIndex++
+				element.setAttribute('src', element.dataset.src)
+			} else {
+				// 后续图片都会离视口区比较远，直接终止循环即可
+				break
+			}
+		}
+	}
+
+	createEl()
+	lazyLoad()
+	// document.addEventListener('scroll', throttle(lazyLoad, 1000))
+	// document.addEventListener('scroll', debounce(lazyLoad, 1000))
+	document.addEventListener('scroll', throttlePlus(lazyLoad, 1000))
+
+	function throttle(fn, delay) {
+		let lastTriggerTime = 0
+
+		return function () {
+			const nowTime = +new Date()
+			if (nowTime - lastTriggerTime >= delay) {
+				lastTriggerTime = nowTime
+				fn.apply(this, arguments)
+			}
+		}
+	}
+
+	function debounce(fn, delay) {
+		let timer = null
+
+		return function () {
+			// 清除未达到触发时间等待出发的 timer
+			if (timer) clearTimeout(timer)
+
+			timer = setTimeout(() => fn.apply(this, arguments), delay)
+		}
+	}
+
+	function throttlePlus(fn, delay) {
+		let lastTriggerTime = 0
+		let timer = null
+
+		return function () {
+			let nowTime = +new Date()
+
+			if (timer) clearTimeout(timer)
+
+			if (nowTime - lastTriggerTime < delay) {
+				// 仍在 delay 时间，则重新设置延时器
+				timer = setTimeout(() => {
+					lastTriggerTime = nowTime
+					fn.apply(this, arguments)
+				}, delay)
+			} else {
+				// 已超出 delay 时间，则直接触发
+				lastTriggerTime = nowTime
+				fn.apply(this, arguments)
+			}
+		}
+	}
+
+
+
+</script>
+
+</html>
