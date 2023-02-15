@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>获取页面上的标签数量最多的元素</title>
+</head>
+
+<body>
+	<script>
+
+		const maxBy = (list, keyBy) => list.reduce((x, y) => keyBy(x) > keyBy(y) ? x : y)
+
+		function getFrequentTag() {
+			const tagsMap = [...document.querySelectorAll('*')]
+				.map(x => x.tagName)
+				.reduce((tagMap, tag) => {
+					tagMap[tag] = tagMap[tag] ? tagMap[tag] + 1 : 1
+					return tagMap
+				}, {})
+
+			return maxBy(Object.entries(tagsMap), tag => tag[1])
+		}
+
+	console.log(getFrequentTag())
+
+	</script>
+</body>
+
+</html>
