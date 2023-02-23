@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<style>
+		#btn {
+			height: 100px;
+		}
+	</style>
+</head>
+<body>
+	<div id="container">
+		<div id="item">
+			<div id="btn"></div>
+		</div>
+	</div>
+</body>
+<script>
+	document.addEventListener('click', () => {
+		console.log('Document click')
+	}, 
+	{
+		capture: true
+	}
+	)
+
+	document.getElementById('container').addEventListener('click', (e) => {
+		console.log('Container click')
+		// e.stopPropagation();
+	}, 
+	{
+		capture: true
+	}
+	)
+	
+
+	document.getElementById('item').addEventListener('click', (e) => {
+		console.log('Item click')
+		// e.stopPropagation();
+	}, 
+	// {
+	// 	capture: true
+	// }
+	)
+
+	document.getElementById('btn').addEventListener('click', (e) => {
+		console.log('Btn click')
+		e.stopPropagation();
+	}, 
+	// {
+	// 	capture: true
+	// }
+	)
+
+	document.getElementById('item').addEventListener('click', (e) => {
+		console.log('Item2 click')
+		// e.stopPropagation();
+	}, 
+	{
+		capture: true
+	}
+	)
+// 先触发捕获
+</script>
+</html>
