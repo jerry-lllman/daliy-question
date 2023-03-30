@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+
+<body>
+
+	<script>
+
+
+		const PromiseAll = (promises) => {
+			return new Promise((resolve, reject) => {
+				const result = []
+				let count = 0
+				for (let i = 0; i < promises.length; i++) {
+					Promise.resolve(promises[i])
+						.then(res => {
+							result[i] = res
+							count++
+							if (count === promises.length) {
+								resolve(result)
+							}
+						}).catch(err => {
+							reject(err)
+						})
+				}
+			})
+		}
+
+		const list = [];
+		for (let i = 1; i <= 20; i++) {
+			const url = `https://jsonplaceholder.typicode.com/todos/${i}`;
+			list.push(fetch(url).then(res => res.json()));
+		}
+
+		PromiseAll(list).then(res => {
+			console.log(res)
+		})
+	</script>
+</body>
+
+</html>
