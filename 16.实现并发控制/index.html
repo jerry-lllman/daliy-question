@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+<script>
+	function controlConcurrency(limit) {
+		let running = 0;
+		const queue = [];
+	
+		function run() {
+			if (running < limit && queue.length > 0) {
+				const promiseFn = queue.shift();
+				running++;
+				promiseFn().finally(() => {
+					running--;
+					run();
+				});
+			}
+		}
+	
+		return function(requests) {
+			const results = [];
+	
+			requests.forEach((request) => {
+				results.push(
+					new Promise((resolve) => {
+						queue.push(() => request().then(resolve));
+						run();
+					})
+				);
+			});
+	
+			return Promise.all(results);
+		};
+	}
+	
+	const request = controlConcurrency(5);
+	const list = [];
+	for (let i = 1; i <= 20; i++) {
+		const url = `https://jsonplaceholder.typicode.com/todos/${i}`;
+		list.push(() => fetch(url).then(res => res.json()));
+	}
+	request(list).then((results) => {
+		console.log(results);
+	});
+
+	request(list).then((results) => {
+		console.log(results);
+	});
+</script>
+<body>
+	
+</body>
+</html>
