@@ -1,19 +1,21 @@
 
 const PENDING = 'pending'
-const REJECTED = 'rejected'
 const FULFILLED = 'fulfilled'
+const REJECTED = 'rejected'
 
-class APromise {
+class BPromise {
+
 	status = PENDING
+
 	value
+
 	reason
 
 	resolveCallbacks = []
 	rejectCallbacks = []
 
 	constructor(execute) {
-
-		const resolveHandle = value => {
+		const resolveHandle = (value) => {
 			if (this.status === PENDING) {
 				this.status = FULFILLED
 				this.value = value
@@ -21,8 +23,8 @@ class APromise {
 			}
 		}
 
-		const rejectHandle = reason => {
-			if (this.status === REJECTED) {
+		const rejectHandle = (reason) => {
+			if (this.status === PENDING) {
 				this.status = REJECTED
 				this.reason = reason
 				this.rejectCallbacks.forEach(callback => callback(this.reason))
@@ -34,7 +36,6 @@ class APromise {
 		} catch (error) {
 			rejectHandle(error)
 		}
-
 	}
 
 	then(successFn, failFn) {
@@ -42,13 +43,13 @@ class APromise {
 		failFn = typeof failFn === 'function' ? failFn : reason => reason
 
 		if (this.status === PENDING) {
-			return new APromise((resolve, reject) => {
-
+			return new BPromise((resolve, reject) => {
+				// 添加回调到队列中
 				this.resolveCallbacks.push(() => {
 					queueMicrotask(() => {
 						try {
-							const resolveValue = successFn(this.value)
-							resolve(resolveValue)
+							const successFnValue = successFn(this.value)
+							resolve(successFnValue)
 						} catch (error) {
 							reject(error)
 						}
@@ -58,20 +59,18 @@ class APromise {
 				this.rejectCallbacks.push(() => {
 					queueMicrotask(() => {
 						try {
-							const failReason = failFn(this.reason)
-							resolve(failReason)
+							const failFnValue = failFn(this.reason)
+							reject(failFnValue)
 						} catch (error) {
 							reject(error)
 						}
 					})
 				})
-
 			})
 		}
 
 		if (this.status === FULFILLED) {
-			// 需要支持链式调用
-			return new APromise((resolve, reject) => {
+			return new BPromise((resolve, reject) => {
 				queueMicrotask(() => {
 					try {
 						const successFnValue = successFn(this.value)
@@ -84,30 +83,28 @@ class APromise {
 		}
 
 		if (this.status === REJECTED) {
-			return new APromise((resolve, reject) => {
+			return new BPromise((resolve, reject) => {
 				queueMicrotask(() => {
 					try {
-						const failFnReason = failFn(this.reason)
-						reject(failFnReason)
+						const failFnValue = failFn(this.reason)
+						reject(failFnValue)
 					} catch (error) {
 						reject(error)
 					}
 				})
-
 			})
 		}
 	}
 
-	catch(errorFn) {
-		return this.then(null, errorFn)
+	catch(failFn) {
+		return this.then(null, failFn)
 	}
-
 }
 
 
-const p = new APromise((resolve, reject) => {
+const p = new BPromise((resolve, reject) => {
 	setTimeout(() => {
-		resolve(100)
+		reject(100)
 	}, 1000)
 })
 
@@ -117,5 +114,11 @@ p.then((res) => {
 	console.log(res)
 })
 
+p.catch(err => {
+	console.log('err 1', err)
+	return err + 1
+}).catch(err => {
+	console.log('err 2', err)
+})
 console.log(2)
 

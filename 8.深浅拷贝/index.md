@@ -79,7 +79,7 @@ function deepClone(target) {
 			result = []
 		} else if (typeof target === 'function') {
 			result = function() {
-				return obj.apply(this, arguments)
+				return target.apply(this, arguments)
 			}
 		} else if (target instanceof RegExp) {
 			result = new RegExp(target.source, target.flags)
